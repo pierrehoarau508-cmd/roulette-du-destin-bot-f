@@ -14,7 +14,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ── État de la roue ─────────────────────────────────────────────────
 const state = {
-  segments    : ['🍋 rayan','💎 pierre','🔥 terrence','💀 arthur','⭐ ajay','⭐ vijay','🃏 noe','🪙 ezeckiel'],
+  segments    : ['🍋 Rayan','💎 Pierre','🔥 Terrence','💀 Arthur','⭐ Ajay','⭐ Vijay','🃏 Noe','🪙 Ezeckiel','🎮 Nathan','🌙 Nayel','🎯 Maxime','⚡ Sylvain','🌸 Tayva','🎲 Jérémie'],
   spinning    : false,
   lastResult  : null,
   spinCount   : 0,
