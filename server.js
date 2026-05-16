@@ -148,16 +148,27 @@ if (!process.env.DISCORD_TOKEN) {
           .setTimestamp()
       ]});
 
+      // Garde le channelId avant le timeout (l'interaction expire après 3s)
+      const channelId = interaction.channelId;
+
       setTimeout(async () => {
         state.spinning = false;
         io.emit('spin-result', { result });
-        await interaction.followUp({ embeds: [
-          new EmbedBuilder()
-            .setTitle('🎯 Résultat !')
-            .setDescription(`**${user}** a obtenu :\n\n||**${result}**||\n\n*Clique pour révéler !*`)
-            .setColor(0x00FF7F)
-            .setTimestamp()
-        ]});
+        // ✅ channel.send() au lieu de followUp() — évite DiscordAPIError[10062]
+        try {
+          const channel = discordClient.channels.cache.get(channelId);
+          if (channel) {
+            await channel.send({ embeds: [
+              new EmbedBuilder()
+                .setTitle('🎯 Résultat !')
+                .setDescription(`**${user}** a obtenu :\n\n||**${result}**||\n\n*Clique pour révéler !*`)
+                .setColor(0x00FF7F)
+                .setTimestamp()
+            ]});
+          }
+        } catch (e) {
+          console.error('Erreur envoi résultat:', e.message);
+        }
       }, 6200);
     }
 
