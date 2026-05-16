@@ -1,1 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Roue du Destin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #D4A843; --gold-light: #F5D98B; --gold-dark: #7A5C1E;
+  --crimson: #8B1A1A; --crimson-light: #C0392B;
+  --ink: #09090f; --parchment: #F2E8D0; --parchment-dim: #C4B48A;
+  --shadow: rgba(0,0,0,0.7);
+}
+html, body { width: 100%; min-height: 100vh; overflow-x: hidden; background: var(--ink); }
+body {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-start; padding: 2rem 1rem 4rem;
+  font-family: 'Cinzel', serif; position: relative;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(139,26,26,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(212,168,67,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(20,10,5,1) 0%, rgba(9,9,15,1) 100%);
+}
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+#stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
+/* ── Avatars flottants ── */
+.avatar {
+  position: fixed;
+  border-radius: 50%;
+  border: 2px solid rgba(212,168,67,0.4);
+  box-shadow: 0 0 18px rgba(212,168,67,0.2), 0 0 40px rgba(0,0,0,0.6);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+  filter: grayscale(30%);
+  animation: floatAvatar var(--dur, 8s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes floatAvatar {
+  0%,100% { transform: translateY(0px) scale(1); }
+  50%      { transform: translateY(-18px) scale(1.04); }
+}
+.content {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 1.2rem;
+  width: 100%; max-width: 600px;
+}
+.header { text-align: center; }
+.eyebrow { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.55em; color: var(--gold-dark); text-transform: uppercase; margin-bottom: 0.5rem; }
+.title {
+  font-family: 'Cinzel Decorative', serif; font-size: clamp(1.8rem, 5vw, 3.2rem);
+  font-weight: 900; color: var(--gold); letter-spacing: 0.04em; line-height: 1.1;
+  text-shadow: 0 0 40px rgba(212,168,67,0.4), 0 2px 0 var(--gold-dark), 0 4px 20px rgba(0,0,0,0.8);
+  animation: titleGlow 3s ease-in-out infinite;
+}
+@keyframes titleGlow {
+  0%,100% { text-shadow: 0 0 40px rgba(212,168,67,0.4), 0 2px 0 var(--gold-dark), 0 4px 20px rgba(0,0,0,0.8); }
+  50% { text-shadow: 0 0 60px rgba(212,168,67,0.7), 0 2px 0 var(--gold-dark), 0 4px 30px rgba(0,0,0,0.8); }
+}
+.ornament {
+  display: flex; align-items: center; gap: 12px; margin: 0.5rem 0;
+  color: var(--gold-dark); font-size: 0.75rem; letter-spacing: 0.3em;
+}
+.ornament::before, .ornament::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-dark), transparent);
+}
+.live-badge {
+  display: inline-flex; align-items: center; gap: 8px; padding: 5px 16px;
+  border: 1px solid rgba(212,168,67,0.25); border-radius: 2px;
+  font-size: 0.6rem; letter-spacing: 0.4em; color: var(--parchment-dim);
+  text-transform: uppercase; background: rgba(212,168,67,0.04);
+}
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; animation: blink 1.6s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
+.wheel-frame {
+  position: relative; padding: 24px;
+  background: radial-gradient(ellipse at center, rgba(212,168,67,0.05) 0%, transparent 70%);
+  border: 1px solid rgba(212,168,67,0.15);
+}
+.wheel-frame::before, .wheel-frame::after, .corner-tl, .corner-tr, .corner-bl, .corner-br {
+  content: ''; position: absolute; width: 20px; height: 20px;
+  border-color: var(--gold-dark); border-style: solid;
+}
+.wheel-frame::before { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
+.wheel-frame::after  { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
+.corner-bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
+.corner-br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+.wheel-container { position: relative; width: min(420px, 80vw); height: min(420px, 80vw); }
+canvas { display: block; width: 100%; height: 100%; }
+.wheel-glow {
+  position: absolute; inset: -20px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(212,168,67,0.12) 0%, transparent 65%);
+  animation: halo 3s ease-in-out infinite; pointer-events: none;
+}
+@keyframes halo { 0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.05)} }
+.wheel-ring {
+  position: absolute; inset: -6px; border-radius: 50%;
+  border: 2px solid var(--gold-dark);
+  box-shadow: 0 0 20px rgba(212,168,67,0.3), inset 0 0 20px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+.needle {
+  position: absolute; top: 50%; right: -14px; transform: translateY(-50%);
+  width: 0; height: 0;
+  border-top: 14px solid transparent; border-bottom: 14px solid transparent;
+  border-right: 36px solid var(--crimson);
+  filter: drop-shadow(0 0 10px rgba(192,57,43,0.9)); z-index: 10;
+}
+.needle::after {
+  content: ''; position: absolute; top: -6px; right: -36px;
+  border-top: 6px solid transparent; border-bottom: 6px solid transparent;
+  border-right: 14px solid rgba(255,255,255,0.15);
+}
+.spin-btn {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: min(74px, 15vw); height: min(74px, 15vw); border-radius: 50%;
+  background: conic-gradient(from 0deg, #7A5C1E, #D4A843, #F5D98B, #D4A843, #7A5C1E);
+  border: 2px solid var(--gold); cursor: pointer; z-index: 20;
+  font-family: 'Cinzel Decorative', serif; font-size: clamp(0.5rem, 1.8vw, 0.7rem);
+  font-weight: 700; letter-spacing: 0.05em; color: #1a0a00;
+  box-shadow: 0 0 30px rgba(212,168,67,0.4), inset 0 -3px 8px rgba(0,0,0,0.4);
+  transition: transform .15s, box-shadow .15s;
+}
+.spin-btn:hover:not(:disabled) { transform: translate(-50%,-50%) scale(1.12); box-shadow: 0 0 50px rgba(212,168,67,0.65), inset 0 -3px 8px rgba(0,0,0,0.4); }
+.spin-btn:active:not(:disabled) { transform: translate(-50%,-50%) scale(.93); }
+.spin-btn:disabled { opacity: .45; cursor: not-allowed; }
+.result-area { text-align: center; min-height: 80px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.result-label { font-family: 'IM Fell English', serif; font-style: italic; font-size: 0.75rem; color: var(--gold-dark); letter-spacing: 0.15em; }
+.result-value {
+  font-family: 'Cinzel Decorative', serif; font-size: clamp(1.6rem, 4vw, 2.8rem);
+  font-weight: 700; color: var(--gold); text-shadow: 0 0 30px rgba(212,168,67,0.5);
+  min-height: 3rem; display: flex; align-items: center; transition: all .3s;
+}
+.result-value.pop { animation: pop .5s cubic-bezier(.175,.885,.32,1.275); }
+@keyframes pop { 0%{transform:scale(.3);opacity:0}70%{transform:scale(1.2)}100%{transform:scale(1);opacity:1} }
+.spin-count { font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.35em; color: var(--gold-dark); text-transform: uppercase; }
+#flash { position: fixed; inset: 0; pointer-events: none; z-index: 200; background: radial-gradient(circle, rgba(212,168,67,0.3) 0%, transparent 65%); opacity: 0; transition: opacity .1s; }
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 190; overflow: hidden; }
+.cf { position: absolute; top: -20px; animation: fall linear forwards; }
+@keyframes fall { to { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="flash"></div>
+<div id="confetti"></div>
+
+<!-- Avatars flottants dans le fond -->
+<img class="avatar" src="pp1.png" style="width:90px;height:90px;top:5%;left:3%;--dur:9s;--delay:0s;">
+<img class="avatar" src="pp2.png" style="width:75px;height:75px;top:15%;right:4%;--dur:11s;--delay:-2s;">
+<img class="avatar" src="pp3.png" style="width:85px;height:85px;top:40%;left:1%;--dur:8s;--delay:-4s;">
+<img class="avatar" src="pp4.png" style="width:80px;height:80px;top:60%;right:2%;--dur:10s;--delay:-1s;">
+<img class="avatar" src="pp5.png" style="width:70px;height:70px;bottom:20%;left:5%;--dur:12s;--delay:-3s;">
+<img class="avatar" src="pp6.png" style="width:80px;height:80px;bottom:10%;right:5%;--dur:9s;--delay:-5s;">
+<img class="avatar" src="pp7.png" style="width:75px;height:75px;top:80%;left:40%;--dur:10s;--delay:-2s;">
+<div class="content">
+  <header class="header">
+    <p class="eyebrow">Bot Discord · Destin scellé</p>
+    <h1 class="title">La Roue<br>du Destin</h1>
+    <div class="ornament">✦ &nbsp; Que le sort en soit jeté &nbsp; ✦</div>
+  </header>
+
+  <div class="live-badge">
+    <span class="live-dot"></span>
+    <span id="liveStatus">Connexion…</span>
+  </div>
+
+  <div class="wheel-frame">
+    <div class="corner-bl"></div>
+    <div class="corner-br"></div>
+    <div class="wheel-container">
+      <div class="wheel-glow"></div>
+      <div class="wheel-ring"></div>
+      <canvas id="canvas" width="420" height="420"></canvas>
+      <div class="needle"></div>
+      <!-- ✅ FIX : appelle requestSpin() au lieu de localSpin() -->
+      <button class="spin-btn" id="spinBtn" onclick="requestSpin()">TOURNER</button>
+    </div>
+  </div>
+
+  <div class="result-area">
+    <div class="result-label">Le destin a parlé</div>
+    <div class="result-value" id="result">—</div>
+  </div>
+  <div class="spin-count" id="counter"></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+// ── État ─────────────────────────────────────────────────────
+let segments = ['🍋 rayan','💎 pierre','🔥 terrence','💀 arthur','⭐ ajay','⭐ vijay','🃏 noe','🪙 ezeckiel'];
+let angle    = 0;   // angle absolu courant (cumulatif, jamais réinitialisé)
+let spinning = false;
+let spinCount = 0;
+
+// ── Palette couleurs ─────────────────────────────────────────
+const COLORS = [
+  '#6B1414','#1A4A2E','#1A2F5C','#4A1A5C',
+  '#5C3D0A','#1A3A4A','#4A1A1A','#0A3A2E'
+];
+
+// ── Canvas ───────────────────────────────────────────────────
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+const SZ = 420, cx = SZ/2, cy = SZ/2, R = SZ/2 - 4;
+
+function draw(a) {
+  ctx.clearRect(0, 0, SZ, SZ);
+  const n = segments.length;
+  if (!n) return;
+  const arc = (Math.PI * 2) / n;
+  for (let i = 0; i < n; i++) {
+    const start = a + i * arc, end = start + arc;
+    const grd = ctx.createRadialGradient(cx, cy, R*0.05, cx, cy, R);
+    const base = COLORS[i % COLORS.length];
+    grd.addColorStop(0, lighten(base, 40));
+    grd.addColorStop(1, base);
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, start, end); ctx.closePath();
+    ctx.fillStyle = grd; ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R-2, start, end);
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.lineWidth = 6; ctx.stroke(); ctx.restore();
+    ctx.save();
+    ctx.translate(cx, cy); ctx.rotate(start + arc / 2);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#FFE8A0';
+    ctx.shadowColor = 'rgba(0,0,0,1)'; ctx.shadowBlur = 8;
+    const fs = Math.max(9, Math.min(14, SZ / (n * 1.5)));
+    ctx.font = `bold ${fs}px "Cinzel", serif`;
+    ctx.fillText(segments[i], R - 14, fs * 0.4);
+    ctx.restore();
+  }
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2);
+  ctx.strokeStyle = '#D4A843'; ctx.lineWidth = 4; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, R - 8, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(212,168,67,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+  for (let i = 0; i < n; i++) {
+    const lineA = a + i * arc;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(lineA)*30, cy + Math.sin(lineA)*30);
+    ctx.lineTo(cx + Math.cos(lineA)*R, cy + Math.sin(lineA)*R);
+    ctx.strokeStyle = 'rgba(212,168,67,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  const hubR = SZ * 0.09;
+  ctx.beginPath(); ctx.arc(cx, cy, hubR + 4, 0, Math.PI*2); ctx.fillStyle = '#1a0a00'; ctx.fill();
+  const hubG = ctx.createRadialGradient(cx-hubR*.3, cy-hubR*.3, 1, cx, cy, hubR);
+  hubG.addColorStop(0, '#F5D98B'); hubG.addColorStop(0.5, '#D4A843'); hubG.addColorStop(1, '#5C3D0A');
+  ctx.beginPath(); ctx.arc(cx, cy, hubR, 0, Math.PI*2); ctx.fillStyle = hubG; ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 2; ctx.stroke();
+  drawStar(ctx, cx, cy, 6, hubR*0.55, hubR*0.25, 'rgba(0,0,0,0.2)');
+}
+
+function drawStar(ctx, x, y, pts, outer, inner, color) {
+  ctx.save(); ctx.translate(x, y); ctx.beginPath();
+  for (let i = 0; i < pts*2; i++) {
+    const r = i%2===0 ? outer : inner;
+    const ang = (i * Math.PI) / pts - Math.PI/2;
+    i===0 ? ctx.moveTo(Math.cos(ang)*r, Math.sin(ang)*r)
+           : ctx.lineTo(Math.cos(ang)*r, Math.sin(ang)*r);
+  }
+  ctx.closePath(); ctx.fillStyle = color; ctx.fill(); ctx.restore();
+}
+
+function lighten(hex, amount) {
+  const num = parseInt(hex.slice(1), 16);
+  return `rgb(${Math.min(255,(num>>16)+amount)},${Math.min(255,((num>>8)&0xff)+amount)},${Math.min(255,(num&0xff)+amount)})`;
+}
+
+// ── Animation ────────────────────────────────────────────────
+// ✅ FIX : totalRot = finalAngle - angle (absolu, pas de modulo)
+function runServerSpin(finalAngle, onDone) {
+  const startAngle = angle;
+  const totalRot   = finalAngle - startAngle; // ← corrigé
+
+  if (totalRot <= 0) { onDone(); return; } // sécurité
+
+  const dur = 6000;
+  const t0  = performance.now();
+  const arcSize = (Math.PI * 2) / segments.length;
+  let lastTickAngle = startAngle;
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4.5); }
+
+  function frame(now) {
+    const p     = Math.min((now - t0) / dur, 1);
+    const eased = easeOut(p);
+    angle = startAngle + totalRot * eased;
+
+    if (angle - lastTickAngle >= arcSize) {
+      lastTickAngle += arcSize;
+      const speed = totalRot * 4 * Math.pow(1 - p, 3.5);
+      if (speed > 0.3) playTick(speed);
+    }
+
+    if (p > 0.8) {
+      const shk = (1 - p) * 5;
+      document.querySelector('.needle').style.transform =
+        `translateY(calc(-50% + ${(Math.random()-.5)*shk}px))`;
+    }
+
+    draw(angle);
+
+    if (p < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      document.querySelector('.needle').style.transform = 'translateY(-50%)';
+      onDone();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ── ✅ FIX : envoie request-spin au serveur, ne bloque plus ──
+function requestSpin() {
+  if (spinning) return;
+  socket.emit('request-spin');
+}
+
+// ── Socket.io ────────────────────────────────────────────────
+const socket = io();
+
+socket.on('connect',    () => { document.getElementById('liveStatus').textContent = 'En direct'; });
+socket.on('disconnect', () => { document.getElementById('liveStatus').textContent = 'Déconnecté'; });
+
+socket.on('wheel-update', data => {
+  segments = data.segments;
+  draw(angle);
+});
+
+socket.on('spin-start', data => {
+  if (spinning) return;
+  spinning = true;
+  segments = data.segments;
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('result').textContent = '✦';
+  document.getElementById('result').classList.remove('pop');
+  playLaunch();
+  // ✅ FIX : utilise data.finalAngle (envoyé par le serveur)
+  runServerSpin(data.finalAngle, () => {
+    spinning = false;
+    document.getElementById('spinBtn').disabled = false;
+  });
+});
+
+socket.on('spin-result', data => {
+  // Léger délai pour que l'animation soit bien terminée
+  setTimeout(() => showResult(data.result), 200);
+});
+
+// ── Résultat & FX ─────────────────────────────────────────────
+function showResult(text) {
+  const rv = document.getElementById('result');
+  rv.textContent = '✦ ' + text + ' ✦';
+  void rv.offsetWidth;
+  rv.classList.add('pop');
+  spinCount++;
+  document.getElementById('counter').textContent = `Invocation nº ${spinCount}`;
+  document.getElementById('flash').style.opacity = '1';
+  setTimeout(() => { document.getElementById('flash').style.opacity = '0'; }, 180);
+  playWin();
+  launchConfetti();
+}
+
+function launchConfetti() {
+  const c = document.getElementById('confetti');
+  const cols = ['#D4A843','#F5D98B','#8B1A1A','#C0392B','#FFE8A0','#fff'];
+  for (let i = 0; i < 110; i++) {
+    const el = document.createElement('div');
+    el.className = 'cf';
+    const s = 5 + Math.random()*10;
+    el.style.cssText = `left:${Math.random()*100}%;width:${s}px;height:${s*(Math.random()*.5+.5)}px;background:${cols[i%cols.length]};border-radius:${Math.random()>.5?'50%':'1px'};animation:fall ${1.6+Math.random()*2}s ${Math.random()*.5}s linear forwards;`;
+    c.appendChild(el);
+  }
+  setTimeout(() => c.innerHTML = '', 4500);
+}
+
+// ── Audio ─────────────────────────────────────────────────────
+let AC;
+function getAC() {
+  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function playTick(speed) {
+  try {
+    const a = getAC(), t = a.currentTime;
+    const vol = Math.min(0.4, 0.06 + speed*0.004);
+    const osc = a.createOscillator(), g = a.createGain();
+    osc.connect(g); g.connect(a.destination);
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(700 + speed*15, t);
+    osc.frequency.exponentialRampToValueAtTime(180, t+0.04);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t+0.05);
+    osc.start(t); osc.stop(t+0.06);
+  } catch(e) {}
+}
+function playLaunch() {
+  try {
+    const a = getAC(), t = a.currentTime;
+    const osc = a.createOscillator(), g = a.createGain();
+    osc.connect(g); g.connect(a.destination);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(60, t);
+    osc.frequency.exponentialRampToValueAtTime(300, t+0.35);
+    g.gain.setValueAtTime(0.28, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t+0.4);
+    osc.start(t); osc.stop(t+0.41);
+  } catch(e) {}
+}
+function playWin() {
+  try {
+    const a = getAC();
+    [392, 523, 659, 784, 1047].forEach((f,i) => {
+      const t = a.currentTime + i*0.1;
+      const osc = a.createOscillator(), g = a.createGain();
+      osc.connect(g); g.connect(a.destination);
+      osc.frequency.value = f; osc.type = 'sine';
+      g.gain.setValueAtTime(0.25, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t+0.35);
+      osc.start(t); osc.stop(t+0.36);
+    });
+  } catch(e) {}
+}
+
+// ── Fond étoilé ───────────────────────────────────────────────
+(function() {
+  const c = document.getElementById('stars');
+  const bx = c.getContext('2d');
+  let W, H, stars;
+  function init() {
+    W = c.width = window.innerWidth; H = c.height = window.innerHeight;
+    stars = Array.from({length:140}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      r: Math.random()*1.2+.2, a: Math.random(),
+      spd: .001+Math.random()*.004, gold: Math.random() > 0.7
+    }));
+  }
+  init();
+  window.addEventListener('resize', init);
+  (function loop() {
+    bx.clearRect(0,0,W,H);
+    stars.forEach(s => {
+      s.a += s.spd; if(s.a>1) s.a=0;
+      const alpha = Math.sin(s.a*Math.PI) * 0.6;
+      bx.beginPath(); bx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      bx.fillStyle = s.gold ? `rgba(212,168,67,${alpha})` : `rgba(242,232,208,${alpha*0.5})`;
+      bx.fill();
+    });
+    requestAnimationFrame(loop);
+  })();
+})();
+
+draw(angle);
+</script>
+</body>
+</html>
