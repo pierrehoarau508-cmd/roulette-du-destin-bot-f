@@ -26,10 +26,20 @@ function computeSpin() {
   const n        = state.segments.length;
   const winIndex = Math.floor(Math.random() * n);
   const arcSize  = (Math.PI * 2) / n;
-  const center   = winIndex * arcSize + arcSize / 2;
-  const toTarget = Math.PI * 2 - center;
-  const extra    = (5 + Math.floor(Math.random() * 4)) * Math.PI * 2;
-  state.currentAngle += extra + toTarget;
+
+  // L'aiguille est à droite (angle 0).
+  // La roue dessine le segment i à partir de (currentAngle + i*arcSize).
+  // Pour que le CENTRE du segment gagnant tombe sur l'aiguille (angle 0),
+  // on calcule combien il faut ajouter à currentAngle :
+  //   currentAngle + winIndex*arcSize + arcSize/2 ≡ 0  (mod 2π)
+  // => delta = -(currentAngle + winIndex*arcSize + arcSize/2)  (mod 2π)
+  const currentMod = ((state.currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+  const segStart   = (winIndex * arcSize + arcSize / 2);
+  let   delta      = (Math.PI * 2) - ((currentMod + segStart) % (Math.PI * 2));
+  if (delta < 0.01) delta += Math.PI * 2; // évite delta ≈ 0
+
+  const extra = (5 + Math.floor(Math.random() * 4)) * Math.PI * 2;
+  state.currentAngle += extra + delta;
   state.spinCount++;
   return { winIndex, result: state.segments[winIndex] };
 }
